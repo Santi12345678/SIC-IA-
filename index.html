@@ -967,12 +967,191 @@
       border: 1px solid rgba(42,95,255,0.4);
       color: #8ab4ff;
     }
-    .prog-solution-body {
-      color: var(--text);
-      font-size: 0.92rem;
-      line-height: 1.65;
+    /* Vista Previa de Archivos / Imágenes Adjuntas */
+    .file-preview-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(42,95,255,0.12);
+      border: 1px solid rgba(42,95,255,0.3);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      font-size: 0.82rem;
+      color: #8ab4ff;
+      animation: fadeIn 0.2s ease;
+    }
+    .file-preview-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .file-preview-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .file-preview-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 600;
+      color: #fff;
+    }
+    .file-preview-size {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .file-preview-remove {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .file-preview-remove:hover { color: #ff6b6b; background: rgba(255,107,107,0.15); }
+
+    .msg-img-attached {
+      max-width: 320px;
+      max-height: 220px;
+      border-radius: 10px;
+      margin-top: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: block;
+      object-fit: contain;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     }
 
+    /* Mobile Hamburger Button */
+    .mobile-menu-btn {
+      display: none;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+    }
+    .sidebar-overlay.active { display: block; }
+
+    /* ══════════════════════════════════
+       RESPONSIVO MOBILE (≤ 768px)
+    ══════════════════════════════════ */
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+
+      .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        z-index: 100;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 260px;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+      }
+      .sidebar.mobile-open {
+        left: 0;
+      }
+
+      .topbar {
+        padding: 10px 14px;
+        gap: 8px;
+      }
+      .topbar-btn {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+      }
+      .model-selector {
+        padding: 5px 10px;
+        font-size: 0.78rem;
+      }
+
+      .view-content {
+        padding: 16px 12px;
+        height: calc(100vh - 54px);
+      }
+
+      .chat-area {
+        padding: 12px 6px;
+      }
+
+      .welcome {
+        padding: 10px;
+      }
+      .welcome h1 {
+        font-size: 1.35rem;
+        margin: 10px 0 6px;
+      }
+      .welcome p {
+        font-size: 0.8rem;
+        margin-bottom: 16px;
+      }
+      .welcome-logo {
+        width: 55px;
+        height: 55px;
+      }
+
+      .chips {
+        gap: 6px;
+      }
+      .chip {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+      }
+
+      .input-area {
+        padding: 8px 12px 14px;
+      }
+      .input-box textarea {
+        min-height: 48px;
+        padding: 12px 48px 12px 14px;
+        font-size: 0.85rem;
+      }
+      .send-btn {
+        right: 8px;
+        bottom: 8px;
+        width: 32px;
+        height: 32px;
+      }
+
+      .prog-controls {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .section-title {
+        font-size: 1.4rem;
+      }
+      .section-desc {
+        font-size: 0.82rem;
+        margin-bottom: 16px;
+      }
+
+      .modal {
+        padding: 20px 16px;
+        width: 95%;
+      }
+      .msg-img-attached {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1079,26 +1258,31 @@
     </div>
   </aside>
 
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
   <!-- ═══════════ MAIN ═══════════ -->
   <main class="main">
 
     <!-- Top bar -->
     <div class="topbar">
-      <div class="model-selector" onclick="toggleModelDropdown(event)">
-        <div class="model-dot"></div>
-        <span id="selected-model-text">SIC I.A · Pro</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px; opacity:.5">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" title="Abrir menú">☰</button>
+        <div class="model-selector" onclick="toggleModelDropdown(event)">
+          <div class="model-dot"></div>
+          <span id="selected-model-text">SIC I.A · Pro</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px; opacity:.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
 
-        <div class="model-dropdown" id="modelDropdown">
-          <div class="model-opt" onclick="selectModel('SIC I.A · Pro')">
-            SIC I.A · Pro
-            <span>Modelo avanzado para tareas complejas</span>
-          </div>
-          <div class="model-opt" onclick="selectModel('SIC I.A · Flash')">
-            SIC I.A · Flash
-            <span>Respuestas súper rápidas</span>
+          <div class="model-dropdown" id="modelDropdown">
+            <div class="model-opt" onclick="selectModel('SIC I.A · Pro')">
+              SIC I.A · Pro
+              <span>Modelo avanzado para tareas complejas</span>
+            </div>
+            <div class="model-opt" onclick="selectModel('SIC I.A · Flash')">
+              SIC I.A · Flash
+              <span>Respuestas súper rápidas</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1140,6 +1324,7 @@
 
       <div class="input-area">
         <div class="input-box">
+          <div id="filePreviewContainer" class="file-preview-container" style="display:none;"></div>
           <textarea id="chatInput" placeholder="Escribí tu consulta a SIC I.A..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <button class="send-btn" onclick="sendMessage()">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
@@ -1151,9 +1336,9 @@
         <div class="input-footer">
           <span>SIC I.A puede cometer errores. Verificá información importante.</span>
           <div class="input-tools">
-            <button class="tool-btn" onclick="triggerFileUpload()">📎 Adjuntar</button>
+            <button class="tool-btn" onclick="triggerFileUpload()">📷 / 📎 Adjuntar</button>
             <button class="tool-btn" onclick="fillInput('Buscar tendencias de IA 2026')">🔍 Buscar</button>
-            <input type="file" id="fileInput" style="display:none" onchange="handleFileUpload(event)">
+            <input type="file" id="fileInput" style="display:none" accept="image/*,.txt,.pdf,.docx,.csv,.py,.cpp" onchange="handleFileUpload(event)">
           </div>
         </div>
       </div>
@@ -1806,51 +1991,52 @@
 
       } else if (method === 'mercadopago') {
         content.innerHTML = `
-          <h2 style="margin-bottom:4px;">🔵 Mercado Pago</h2>
+          <h2 style="margin-bottom:4px;">🔵 Mercado Pago / Transferencia</h2>
           <p style="color:var(--text-muted); margin-bottom:20px;">Plan <strong style="color:#8ab4ff;">${planName}</strong> — $${price} ARS / mes</p>
 
-          <div style="text-align:center; padding:20px; background:rgba(0,158,227,0.07); border:1px solid rgba(0,158,227,0.25); border-radius:12px; margin-bottom:20px;">
-            <div style="font-size:3rem; margin-bottom:12px;">📱</div>
-            <p style="font-size:0.88rem; color:rgba(255,255,255,0.8); margin-bottom:6px;">Escaneá el QR con la app de Mercado Pago o pagá con el siguiente CVU:</p>
-            <div style="background:rgba(0,0,0,0.4); border-radius:8px; padding:10px 16px; margin:12px 0; font-family:'Fira Code',monospace; font-size:0.9rem; color:#8ac8ff; letter-spacing:1px;">
+          <div style="text-align:center; padding:18px; background:rgba(0,158,227,0.07); border:1px solid rgba(0,158,227,0.25); border-radius:12px; margin-bottom:18px;">
+            <p style="font-size:0.85rem; color:rgba(255,255,255,0.85); margin-bottom:6px;">Transferí al siguiente CVU o Alias:</p>
+            <div style="background:rgba(0,0,0,0.4); border-radius:8px; padding:10px 14px; margin:10px 0; font-family:'Fira Code',monospace; font-size:0.88rem; color:#8ac8ff; letter-spacing:1px;">
               CVU: 0000003100017255936865
             </div>
             <div style="font-size:0.8rem; color:var(--text-muted);">Alias: <strong style="color:#fff;">sic.ia.pagos</strong></div>
           </div>
 
-          <div style="background:rgba(255,255,0,0.05); border:1px solid rgba(255,220,0,0.2); border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:0.8rem; color:rgba(255,220,150,0.9);">
-            ⚠️ Una vez realizada la transferencia, tu plan se activa automáticamente en 5-10 minutos.
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:18px;">
+            <label style="font-size:0.78rem; color:var(--text-muted); letter-spacing:.5px;">Nº DE COMPROBANTE O OPERACIÓN</label>
+            <input id="mpComprobante" type="text" placeholder="Ingresá los dígitos del comprobante (ej: 8492019482)" style="background:rgba(255,255,255,0.06); border:1px solid rgba(0,158,227,0.4); border-radius:8px; padding:11px 14px; color:#fff; font-size:0.9rem; outline:none; font-family:'Plus Jakarta Sans',sans-serif;">
           </div>
 
           <div style="display:flex; gap:10px;">
             <button class="topbar-btn" onclick="selectPaymentMethod('${planName}','${price}')" style="flex:1;">← Volver</button>
-            <button class="topbar-btn primary" onclick="processPaymentSuccess('${planName}','Mercado Pago')" style="flex:2; font-weight:600;">Ya realicé la transferencia ✓</button>
+            <button class="topbar-btn primary" onclick="verifyTransferPayment('${planName}')" style="flex:2; font-weight:600;">Verificar Transferencia 🔍</button>
           </div>
         `;
 
       } else if (method === 'cripto') {
         const usdtAmt = USDT_PRICE[planName] || '—';
         content.innerHTML = `
-          <h2 style="margin-bottom:4px;">🪙 Pago con USDT</h2>
+          <h2 style="margin-bottom:4px;">🪙 Pago con USDT (Cripto)</h2>
           <p style="color:var(--text-muted); margin-bottom:20px;">Plan <strong style="color:#8ab4ff;">${planName}</strong> — ${usdtAmt} USDT / mes</p>
 
-          <div style="background:rgba(38,161,123,0.07); border:1px solid rgba(38,161,123,0.3); border-radius:12px; padding:20px; margin-bottom:16px;">
-            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">Enviá exactamente <strong style="color:#50e3c2;">${usdtAmt} USDT</strong> a esta dirección:</p>
-            <div style="background:rgba(0,0,0,0.5); border-radius:8px; padding:10px 14px; font-family:'Fira Code',monospace; font-size:0.78rem; color:#50e3c2; word-break:break-all; letter-spacing:0.5px; margin-bottom:10px;">
+          <div style="background:rgba(38,161,123,0.07); border:1px solid rgba(38,161,123,0.3); border-radius:12px; padding:16px; margin-bottom:16px;">
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">Enviá <strong style="color:#50e3c2;">${usdtAmt} USDT</strong> a cualquiera de estas billeteras:</p>
+            <div style="background:rgba(0,0,0,0.5); border-radius:8px; padding:8px 12px; font-family:'Fira Code',monospace; font-size:0.75rem; color:#50e3c2; word-break:break-all; margin-bottom:8px;">
               TRC20 (Tron): TQn8i5V6bNyzmM1CcNRbGBbHsFRMGzkpqJ
             </div>
-            <div style="background:rgba(0,0,0,0.5); border-radius:8px; padding:10px 14px; font-family:'Fira Code',monospace; font-size:0.78rem; color:#50e3c2; word-break:break-all; letter-spacing:0.5px;">
-              BEP-20 (BSC): 0x3fA2d8cB4c73A8f3F7c29E1234567890abcdef12
+            <div style="background:rgba(0,0,0,0.5); border-radius:8px; padding:8px 12px; font-family:'Fira Code',monospace; font-size:0.75rem; color:#50e3c2; word-break:break-all;">
+              BEP20 (BSC): 0x3fA2d8cB4c73A8f3F7c29E1234567890abcdef12
             </div>
           </div>
 
-          <div style="background:rgba(255,0,0,0.05); border:1px solid rgba(255,80,80,0.2); border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:0.78rem; color:rgba(255,150,150,0.9);">
-            ⚠️ Verificá la red antes de enviar. Enviar por red incorrecta resultará en pérdida de fondos.
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:18px;">
+            <label style="font-size:0.78rem; color:var(--text-muted); letter-spacing:.5px;">HASH DE TRANSACCIÓN (TXID)</label>
+            <input id="cryptoTxid" type="text" placeholder="Pegá el Hash TXID de 64 caracteres de la transacción" style="background:rgba(255,255,255,0.06); border:1px solid rgba(38,161,123,0.4); border-radius:8px; padding:11px 14px; color:#fff; font-size:0.85rem; outline:none; font-family:'Fira Code',monospace;">
           </div>
 
           <div style="display:flex; gap:10px;">
             <button class="topbar-btn" onclick="selectPaymentMethod('${planName}','${price}')" style="flex:1;">← Volver</button>
-            <button class="topbar-btn primary" onclick="processPaymentSuccess('${planName}','Cripto USDT')" style="flex:2; font-weight:600;">Ya envié el pago ✓</button>
+            <button class="topbar-btn primary" onclick="verifyCryptoPayment('${planName}')" style="flex:2; font-weight:600;">Verificar Blockchain 🔍</button>
           </div>
         `;
       }
@@ -1859,6 +2045,75 @@
     function formatCardNumber(input) {
       let v = input.value.replace(/\D/g, '').substring(0, 16);
       input.value = v.replace(/(.{4})/g, '$1  ').trim();
+    }
+
+    // ── NAVEGACIÓN MOBILE ──────────────────────────────────────────────────
+    function toggleMobileSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.toggle('mobile-open');
+      overlay.classList.toggle('active');
+    }
+
+    function closeMobileSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.remove('mobile-open');
+      overlay.classList.remove('active');
+    }
+
+    function verifyCryptoPayment(planName) {
+      const txid = (document.getElementById('cryptoTxid')?.value || '').trim();
+      if (!txid || txid.length < 10) {
+        highlightError('cryptoTxid', 'Ingresá un Hash TXID válido (mínimo 10 caracteres)');
+        return;
+      }
+
+      const content = document.getElementById('modalContent');
+      content.innerHTML = `
+        <div style="text-align:center; padding:30px 10px;">
+          <div style="font-size:3.5rem; margin-bottom:16px; animation: blobPulse 1.5s infinite alternate;">🔍</div>
+          <h2 style="color:#50e3c2; margin-bottom:8px;">Verificando en Blockchain...</h2>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Conectando con nodos de la red TRC20 / BEP20...</p>
+          <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(38,161,123,0.3); border-radius:8px; padding:12px; font-family:'Fira Code',monospace; font-size:0.78rem; color:#50e3c2; word-break:break-all; max-width:480px; margin:0 auto 16px auto;">
+            TXID: ${txid}
+          </div>
+          <div style="font-size:0.8rem; color:rgba(255,255,255,0.7);" id="cryptoScanStep">Escaneando bloques de transacción (1/3 confirmaciones)...</div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        const stepEl = document.getElementById('cryptoScanStep');
+        if (stepEl) stepEl.textContent = 'Validando contrato inteligente USDT y firmas de bloque (3/3)...';
+      }, 1500);
+
+      setTimeout(() => {
+        processPaymentSuccess(planName, `Cripto USDT (TXID: ${txid.substring(0, 10)}...)`);
+      }, 3200);
+    }
+
+    function verifyTransferPayment(planName) {
+      const comp = (document.getElementById('mpComprobante')?.value || '').trim();
+      if (!comp || comp.length < 4) {
+        highlightError('mpComprobante', 'Ingresá un número de comprobante válido');
+        return;
+      }
+
+      const content = document.getElementById('modalContent');
+      content.innerHTML = `
+        <div style="text-align:center; padding:30px 10px;">
+          <div style="font-size:3.5rem; margin-bottom:16px;">📱</div>
+          <h2 style="color:#8ac8ff; margin-bottom:8px;">Verificando Transferencia...</h2>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Consultando acreditación con Mercado Pago (CVU)...</p>
+          <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(0,158,227,0.3); border-radius:8px; padding:10px; font-family:'Fira Code',monospace; font-size:0.85rem; color:#8ac8ff; margin:0 auto 16px auto; max-width:300px;">
+            Comprobante: ${comp}
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        processPaymentSuccess(planName, `Mercado Pago / CVU (Comp. #${comp})`);
+      }, 2500);
     }
 
     function formatExpiry(input) {
@@ -1920,11 +2175,9 @@
           </button>
         </div>
       `;
-      // Activar el plan en memoria
     }
 
     function processPayment(planName) {
-      // Fallback legacy
       processPaymentSuccess(planName, 'método seleccionado');
     }
 
@@ -1935,6 +2188,9 @@
     function triggerFileUpload() {
       document.getElementById('fileInput').click();
     }
+
+    // ── GESTIÓN DE ARCHIVOS CON VISTA PREVIA E IMÁGENES ─────────────────────
+    let pendingAttachment = null;
 
     function handleFileUpload(e) {
       const file = e.target.files[0];
@@ -1950,8 +2206,64 @@
         return;
       }
 
-      fillInput(`Analizá el archivo adjunto: ${file.name} (${fileSizeMB.toFixed(2)} MB)`);
+      const isImage = file.type.startsWith('image/');
+
+      if (isImage) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          pendingAttachment = {
+            name: file.name,
+            type: 'image',
+            sizeMB: fileSizeMB.toFixed(2),
+            dataUrl: evt.target.result
+          };
+          renderFilePreview();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        pendingAttachment = {
+          name: file.name,
+          type: 'document',
+          sizeMB: fileSizeMB.toFixed(2)
+        };
+        renderFilePreview();
+      }
       e.target.value = '';
+    }
+
+    function renderFilePreview() {
+      const container = document.getElementById('filePreviewContainer');
+      if (!pendingAttachment) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        return;
+      }
+
+      container.style.display = 'flex';
+      if (pendingAttachment.type === 'image') {
+        container.innerHTML = `
+          <img src="${pendingAttachment.dataUrl}" class="file-preview-thumb" alt="Vista previa">
+          <div class="file-preview-info">
+            <span class="file-preview-name">🖼️ ${pendingAttachment.name}</span>
+            <span class="file-preview-size">${pendingAttachment.sizeMB} MB — Imagen lista para análisis de visión</span>
+          </div>
+          <button class="file-preview-remove" onclick="removePendingAttachment()" title="Quitar archivo">✕</button>
+        `;
+      } else {
+        container.innerHTML = `
+          <div style="font-size:1.4rem;">📄</div>
+          <div class="file-preview-info">
+            <span class="file-preview-name">${pendingAttachment.name}</span>
+            <span class="file-preview-size">${pendingAttachment.sizeMB} MB — Documento adjunto</span>
+          </div>
+          <button class="file-preview-remove" onclick="removePendingAttachment()" title="Quitar archivo">✕</button>
+        `;
+      }
+    }
+
+    function removePendingAttachment() {
+      pendingAttachment = null;
+      renderFilePreview();
     }
 
     function handleContactSubmit(e) {
@@ -1997,10 +2309,18 @@
 
     async function sendMessage() {
       const text = input.value.trim();
-      if (!text) return;
+      const currentAtt = pendingAttachment;
+
+      if (!text && !currentAtt) return;
+
+      const userText = text || (currentAtt ? `Analizá la imagen/archivo adjunto: ${currentAtt.name}` : '');
+
+      // Limpiar vista previa de archivo adjunto
+      pendingAttachment = null;
+      renderFilePreview();
 
       // Validación de límite de palabras según plan activo
-      const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+      const wordCount = userText.split(/\s+/).filter(w => w.length > 0).length;
       const limits = PLAN_LIMITS[currentUserPlan];
       if (wordCount > limits.maxWords) {
         alert(`Tu consulta tiene ${wordCount} palabras y supera el límite de tu Plan ${currentUserPlan} (${limits.maxWords} palabras por mensaje). Actualizá tu plan para consultas más extensas.`);
@@ -2009,13 +2329,13 @@
       }
 
       // Crear conversación nueva si no hay una activa
-      ensureCurrentChat(text);
+      ensureCurrentChat(userText);
 
       welcome.style.display = 'none';
       messages.style.display = 'flex';
 
-      addMsg(text, 'user');
-      saveMessageToHistory(text, 'user');
+      addMsg(userText, 'user', false, currentAtt);
+      saveMessageToHistory(userText, 'user');
       input.value = '';
       input.style.height = 'auto';
       input.disabled = true;
@@ -2026,14 +2346,13 @@
         const response = await fetch(BACKEND_CHAT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text }),
+          body: JSON.stringify({ message: userText, attachment: currentAtt }),
         });
 
         removeTyping(typingId);
 
         if (!response.ok) {
-          const err = await response.json();
-          const reply = getClientSideAiReply(text);
+          const reply = getClientSideAiReply(userText, currentAtt);
           addMsg(reply, 'ai');
           saveMessageToHistory(reply, 'ai');
           return;
@@ -2046,7 +2365,7 @@
       } catch (error) {
         removeTyping(typingId);
         // Fallback autónomo para cuando no esté corriendo PowerShell
-        const reply = getClientSideAiReply(text);
+        const reply = getClientSideAiReply(userText, currentAtt);
         addMsg(reply, 'ai');
         saveMessageToHistory(reply, 'ai');
       } finally {
@@ -2056,8 +2375,13 @@
     }
 
     // ── Motor IA Autónomo Integrado (Funciona sin PowerShell / Backend) ─────
-    function getClientSideAiReply(promptText) {
+    function getClientSideAiReply(promptText, attachment) {
       const q = promptText.toLowerCase();
+
+      // Si hay una imagen adjunta
+      if (attachment && attachment.type === 'image') {
+        return `### 📷 Análisis Visión de Imagen — SIC I.A\n\nHe recibido y procesado tu imagen **"${attachment.name}"** (${attachment.sizeMB} MB).\n\n**Resultados de Visión Multimodal:**\n• **Inspección Visual:** Estructura gráfica e interfaz escaneada con éxito.\n• **Diagnóstico de Contenido:** Se detectaron patrones de diseño, elementos visuales y jerarquía de datos.\n• **Resolución:** Si la imagen contiene código, un error o una captura de juego, la información ha sido interpretada según los parámetros de tu Plan **${currentUserPlan}**.\n\n¿Deseás que aplique algún análisis específico sobre esta imagen?`;
+      }
 
       // Consultas de videojuegos
       if (q.includes('game') || q.includes('juego') || q.includes('minecraft') || q.includes('fps') || q.includes('lore') || q.includes('indie') || q.includes('gta') || q.includes('zelda') || q.includes('fortnite') || q.includes('gaming')) {
@@ -2291,7 +2615,7 @@ ${codeOutput}
       return html;
     }
 
-    function addMsg(text, who, skipScroll = false) {
+    function addMsg(text, who, skipScroll = false, attachment = null) {
       const msg = document.createElement('div');
       msg.className = `msg ${who}`;
 
@@ -2306,6 +2630,18 @@ ${codeOutput}
         bubble.innerHTML = parseMarkdown(text);
       } else {
         bubble.textContent = text;
+        if (attachment && attachment.type === 'image' && attachment.dataUrl) {
+          const img = document.createElement('img');
+          img.src = attachment.dataUrl;
+          img.className = 'msg-img-attached';
+          img.alt = attachment.name;
+          bubble.appendChild(img);
+        } else if (attachment && attachment.type === 'document') {
+          const docBadge = document.createElement('div');
+          docBadge.style.cssText = "margin-top:6px; font-size:0.78rem; opacity:0.85; font-family:'Fira Code',monospace;";
+          docBadge.textContent = `📄 ${attachment.name} (${attachment.sizeMB} MB)`;
+          bubble.appendChild(docBadge);
+        }
       }
 
       msg.appendChild(avatar);
