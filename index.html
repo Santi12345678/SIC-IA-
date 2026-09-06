@@ -387,32 +387,38 @@
     }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
+    .model-selector-inline {
+      position: relative;
+    }
     .model-dropdown {
       position: absolute;
-      top: 45px; left: 0;
-      width: 220px;
-      background: rgba(10, 20, 50, 0.95);
-      border: 1px solid rgba(42,95,255,0.3);
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      backdrop-filter: blur(15px);
+      bottom: 34px;
+      right: 0;
+      width: 250px;
+      background: #060e29;
+      border: 1px solid rgba(42,95,255,0.4);
+      border-radius: 12px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.9);
+      backdrop-filter: blur(16px);
       display: none;
       flex-direction: column;
       overflow: hidden;
-      z-index: 100;
+      z-index: 1000;
     }
     .model-dropdown.show { display: flex; }
     .model-opt {
       padding: 12px 14px;
       font-size: 0.82rem;
-      color: rgba(255,255,255,0.7);
+      color: rgba(255,255,255,0.85);
       cursor: pointer;
       display: flex;
       flex-direction: column;
       gap: 2px;
       transition: background 0.2s;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .model-opt:hover { background: rgba(42,95,255,0.15); color: #fff; }
+    .model-opt:last-child { border-bottom: none; }
+    .model-opt:hover { background: rgba(42,95,255,0.22); color: #fff; }
     .model-opt span { font-size: 0.7rem; color: var(--text-muted); }
 
     .topbar-actions { display: flex; gap: 10px; }
@@ -1267,24 +1273,7 @@
     <div class="topbar">
       <div style="display:flex; align-items:center; gap:10px;">
         <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" title="Abrir menú">☰</button>
-        <div class="model-selector" onclick="toggleModelDropdown(event)">
-          <div class="model-dot"></div>
-          <span id="selected-model-text">SIC I.A · Pro</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px; opacity:.5">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-
-          <div class="model-dropdown" id="modelDropdown">
-            <div class="model-opt" onclick="selectModel('SIC I.A · Pro')">
-              SIC I.A · Pro
-              <span>Modelo avanzado para tareas complejas</span>
-            </div>
-            <div class="model-opt" onclick="selectModel('SIC I.A · Flash')">
-              SIC I.A · Flash
-              <span>Respuestas súper rápidas</span>
-            </div>
-          </div>
-        </div>
+        <span style="font-weight:600; font-size:0.92rem; color:#8ab4ff; letter-spacing:0.5px;">SIC I.A Asistente</span>
       </div>
       <div class="topbar-actions">
         <button class="topbar-btn" onclick="openModal('share')">Compartir</button>
@@ -1336,6 +1325,22 @@
         <div class="input-footer">
           <span>SIC I.A puede cometer errores. Verificá información importante.</span>
           <div class="input-tools">
+            <!-- Selector de Modelo (Pro / Flash) al lado de adjuntar -->
+            <div class="model-selector-inline" id="modelSelectorInline">
+              <button class="tool-btn" onclick="toggleModelDropdown(event)" style="border-color:rgba(42,95,255,0.4); color:#8ab4ff; font-weight:600;">
+                <span id="selected-model-text">⚡ SIC I.A · Pro</span> ▾
+              </button>
+              <div class="model-dropdown" id="modelDropdown">
+                <div class="model-opt" onclick="selectModel('⚡ SIC I.A · Pro')">
+                  <strong>⚡ SIC I.A · Pro</strong>
+                  <span>Respuestas extensas, profundas y estructuradas</span>
+                </div>
+                <div class="model-opt" onclick="selectModel('⚡ SIC I.A · Flash')">
+                  <strong>⚡ SIC I.A · Flash</strong>
+                  <span>Respuestas rápidas y ágiles</span>
+                </div>
+              </div>
+            </div>
             <button class="tool-btn" onclick="triggerFileUpload()">📷 / 📎 Adjuntar</button>
             <button class="tool-btn" onclick="fillInput('Buscar tendencias de IA 2026')">🔍 Buscar</button>
             <input type="file" id="fileInput" style="display:none" accept="image/*,.txt,.pdf,.docx,.csv,.py,.cpp" onchange="handleFileUpload(event)">
@@ -1553,8 +1558,16 @@
     const input    = document.getElementById('chatInput');
     const messages = document.getElementById('messages');
     const welcome  = document.getElementById('welcome');
-    const BACKEND_CHAT_URL = 'http://localhost:8000/api/chat';
-    const BACKEND_CODE_URL = 'http://localhost:8000/api/code-analysis';
+    // ── Gemini API — Conexión directa sin backend ──────────────────────────
+    const GEMINI_API_KEY = 'AQ.Ab8RN6IPGqiV41iExyiLOSCH35ypKlNhszUYnUvvR5eyM-x6BQ';
+    const GEMINI_MODEL_FLASH = 'gemini-2.0-flash';
+    const GEMINI_MODEL_PRO = 'gemini-2.5-flash';
+    function getGeminiUrl() {
+      const model = currentSelectedModel.includes('Pro') ? GEMINI_MODEL_PRO : GEMINI_MODEL_FLASH;
+      return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    }
+    // Historial de conversación para contexto multi-turno
+    let geminiConversation = [];
 
     // ── Sistema de Historial de Conversaciones ──────────────────────────────
     let chatHistory = [];    // Array de { id, firstMessage, messages: [{text, who}] }
@@ -1722,9 +1735,13 @@
       document.getElementById('modelDropdown').classList.toggle('show');
     }
 
+    let currentSelectedModel = '⚡ SIC I.A · Pro';
+
     function selectModel(name) {
-      document.getElementById('selected-model-text').textContent = name;
-      document.getElementById('modelDropdown').classList.remove('show');
+      currentSelectedModel = name;
+      const el = document.getElementById('selected-model-text');
+      if (el) el.textContent = name;
+      document.getElementById('modelDropdown')?.classList.remove('show');
     }
 
     document.addEventListener('click', () => {
@@ -2343,92 +2360,82 @@
       const typingId = addTyping();
 
       try {
-        const response = await fetch(BACKEND_CHAT_URL, {
+        // Construir partes del mensaje del usuario
+        const userParts = [{ text: userText }];
+        // Si hay imagen adjunta, enviarla como inline_data
+        if (currentAtt && currentAtt.type === 'image' && currentAtt.dataUrl) {
+          const base64Match = currentAtt.dataUrl.match(/^data:(.+?);base64,(.+)$/);
+          if (base64Match) {
+            userParts.push({
+              inline_data: {
+                mime_type: base64Match[1],
+                data: base64Match[2]
+              }
+            });
+          }
+        }
+
+        // Agregar al historial de conversación de Gemini
+        geminiConversation.push({ role: 'user', parts: userParts });
+
+        // Limitar historial a últimos 20 turnos para no exceder tokens
+        if (geminiConversation.length > 40) {
+          geminiConversation = geminiConversation.slice(-40);
+        }
+
+        const requestBody = {
+          system_instruction: {
+            parts: [{ text: "Sos SIC I.A, un asistente de inteligencia artificial especializado en videojuegos y programación. Respondé siempre en español argentino. Podés hablar de cualquier tema relacionado con videojuegos (gameplay, lore, configuración, rendimiento, recomendaciones, game design, motores gráficos, esports) y programación (cualquier lenguaje, debugging, algoritmos, frameworks, desarrollo web, desarrollo de juegos, bases de datos, etc). Si te preguntan algo que no tiene nada que ver con videojuegos o programación, respondé amablemente pero redirigí la conversación hacia esos temas. Usá markdown para formatear tus respuestas con títulos, listas, bloques de código cuando corresponda. Sé detallado, útil y conversacional." }]
+          },
+          contents: geminiConversation,
+          generationConfig: {
+            temperature: 0.8,
+            topP: 0.95,
+            maxOutputTokens: 4096
+          }
+        };
+
+        const response = await fetch(getGeminiUrl(), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: userText, attachment: currentAtt }),
+          body: JSON.stringify(requestBody)
         });
 
         removeTyping(typingId);
 
         if (!response.ok) {
-          const reply = getClientSideAiReply(userText, currentAtt);
-          addMsg(reply, 'ai');
-          saveMessageToHistory(reply, 'ai');
+          const err = await response.json().catch(() => ({}));
+          const errorDetail = err?.error?.message || JSON.stringify(err);
+          const errorMsg = '⚠️ Error de la API de Gemini (' + response.status + '): ' + errorDetail;
+          addMsg(errorMsg, 'ai');
+          saveMessageToHistory(errorMsg, 'ai');
+          // Quitar el último mensaje del usuario del historial de Gemini si falla
+          geminiConversation.pop();
           return;
         }
 
         const data = await response.json();
-        addMsg(data.reply, 'ai');
-        saveMessageToHistory(data.reply, 'ai');
+        const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ La IA no generó una respuesta. Intentá de nuevo.';
+
+        // Agregar respuesta al historial de conversación de Gemini
+        geminiConversation.push({ role: 'model', parts: [{ text: aiText }] });
+
+        addMsg(aiText, 'ai');
+        saveMessageToHistory(aiText, 'ai');
 
       } catch (error) {
         removeTyping(typingId);
-        // Fallback autónomo para cuando no esté corriendo PowerShell
-        const reply = getClientSideAiReply(userText, currentAtt);
-        addMsg(reply, 'ai');
-        saveMessageToHistory(reply, 'ai');
+        const errorMsg = '⚠️ No se pudo conectar con la API de Gemini. Verificá tu conexión a internet. (' + error.message + ')';
+        addMsg(errorMsg, 'ai');
+        saveMessageToHistory(errorMsg, 'ai');
+        // Quitar el último mensaje del usuario del historial de Gemini si falla
+        geminiConversation.pop();
       } finally {
         input.disabled = false;
         input.focus();
       }
     }
 
-    // ── Motor IA Autónomo Integrado (Funciona sin PowerShell / Backend) ─────
-    function getClientSideAiReply(promptText, attachment) {
-      const q = promptText.toLowerCase();
-
-      // Si hay una imagen adjunta
-      if (attachment && attachment.type === 'image') {
-        return `### 📷 Análisis Visión de Imagen — SIC I.A\n\nHe recibido y procesado tu imagen **"${attachment.name}"** (${attachment.sizeMB} MB).\n\n**Resultados de Visión Multimodal:**\n• **Inspección Visual:** Estructura gráfica e interfaz escaneada con éxito.\n• **Diagnóstico de Contenido:** Se detectaron patrones de diseño, elementos visuales y jerarquía de datos.\n• **Resolución:** Si la imagen contiene código, un error o una captura de juego, la información ha sido interpretada según los parámetros de tu Plan **${currentUserPlan}**.\n\n¿Deseás que aplique algún análisis específico sobre esta imagen?`;
-      }
-
-      // Consultas de videojuegos
-      if (q.includes('game') || q.includes('juego') || q.includes('minecraft') || q.includes('fps') || q.includes('lore') || q.includes('indie') || q.includes('gta') || q.includes('zelda') || q.includes('fortnite') || q.includes('gaming')) {
-        if (q.includes('minecraft')) {
-          return `### 🎮 Análisis Especializado de Minecraft\n\n**Mecánicas clave & Estrategias:**\n• **Redstone & Automatización:** Diseñá granjas automáticas utilizando comparadores y repetidores para optimizar el rendimiento de la entidad.\n• **Optimización de FPS:** Recomendamos usar el mod **Sodium** + **Iris Shaders** en la versión Fabric para lograr hasta un 300% más de fotogramas por segundo.\n• **Progreso:** Enfocate en conseguir la granja de aldeanos antes de la exploración del Nether para obtener equipamiento de Diamante encantado a bajo costo.`;
-        }
-        if (q.includes('fps') || q.includes('rendimiento') || q.includes('lag')) {
-          return `### ⚡ Guía de Optimización de FPS y Latencia\n\n**Pasos técnicos para maximizar el rendimiento:**\n1. **Ajustes de Sistema:** Desactivá el Modo de Juego de Windows Game Bar si causa micro-stuttering.\n2. **Drivers GPU:** Mantené actualizados los controladores Game Ready (NVIDIA) o Adrenalin (AMD).\n3. **Configuración del juego:**\n   - Sombra: Media/Baja (Consume hasta un 40% de GPU).\n   - Oclusión Ambiental: Desactivada.\n   - Escala de renderizado: 100% nativa.\n   - Límite de FPS: Bloqueá al valor de refresco de tu monitor (ej. 144Hz).`;
-        }
-        return `### 🎮 SIC I.A — Asistente de Videojuegos\n\nRecibí tu consulta sobre **${promptText}**.\n\n**Análisis del Asistente:**\n• **Mecánicas & Gameplay:** Analizando diseño de niveles, curva de dificultad y sinergia de habilidades.\n• **Recomendación:** Si buscás experiencias similares, te recomiendo evaluar títulos con dinámicas emergentes y sistemas de progresión no lineal.\n• **Tip Gamer:** Verificá los requisitos mínimos de GPU y CPU para evitar cuellos de botella de rendimiento.`;
-      }
-
-      // Consultas de programación
-      if (q.includes('código') || q.includes('program') || q.includes('python') || q.includes('c++') || q.includes('javascript') || q.includes('java') || q.includes('error') || q.includes('function') || q.includes('algoritmo')) {
-        return `### 💻 SIC I.A — Análisis Técnico de Programación\n\n**Consulta:** "${promptText}"\n\n**Diagnóstico:**\n1. **Estructura del Algoritmo:** El enfoque propuesto requiere atención en la complejidad temporal **O(N)** y el manejo eficiente de memoria.\n2. **Buenas Prácticas:** Asegurate de manejar excepciones mediante bloques \`try-catch\` o manejo de errores explícito según la especificación del lenguaje.\n3. **Optimización Sugerida:**\n\`\`\`javascript\n// Ejemplo de implementación limpia e inmutable\nconst processData = (items) => {\n  return items.filter(Boolean).map(item => ({\n    id: item.id,\n    processed: true\n  }));\n};\n\`\`\``;
-      }
-
-      // Respuesta General de SIC I.A
-      return `### 🤖 SIC I.A — Respuesta del Asistente\n\nHe procesado tu mensaje: **"${promptText}"**.\n\nComo asistente integrado de **SIC I.A**, estoy listo para ayudarte en:\n- **Programación:** Depuración, optimización de código en C++, Python, JS, C# y arquitecturas.\n- **Videojuegos:** Guías de rendimiento, análisis de lore, mecánicas y desarrollo de juegos.\n- **Lógica & Algoritmos:** Resolución paso a paso con máxima precisión técnica.`;
-    }
-
-    function getClientSideCodeAnalysis(language, helpType, problemDesc, code) {
-      let codeOutput = code ? code : `// Ejemplo optimizado en ${language}\nvoid executeTask() {\n    // Implementación sin cuellos de botella\n}`;
-
-      return `### 📋 Informe Técnico de Programación — SIC I.A
-
-#### 1. Identificación del Problema
-- **Lenguaje:** \`${language}\`
-- **Categoría:** \`${helpType}\`
-- **Contexto:** ${problemDesc || 'Análisis general del bloque de código proporcionado.'}
-
-#### 2. Diagnóstico Técnico
-- **Sintaxis & Estructura:** Correcta alineación de tipos y sintaxis básica.
-- **Rendimiento:** Complejidad de memoria evaluada en **O(1)**.
-- **Diagnóstico:** Se identifican oportunidades de refactorización para garantizar mayor mantenibilidad y prevención de fugas de memoria.
-
-#### 3. Solución Propuesta & Código Corregido
-
-\`\`\`${language.toLowerCase()}
-${codeOutput}
-\`\`\`
-
-#### 4. Explicación Paso a Paso
-1. **Validación de entradas:** Garantiza la integridad de los datos recibidos.
-2. **Eficiencia:** Eliminación de iteraciones redundantes.
-3. **Escalabilidad:** Compatible con estándares modernos del lenguaje.`;
-    }
 
     // ── Programación: Agente y flujo de razonamiento ─────────────────────────
     async function runCodeAnalysis() {
@@ -2472,34 +2479,58 @@ ${codeOutput}
       }, 1200);
 
       try {
-        const response = await fetch(BACKEND_CODE_URL, {
+        const prompt = `Sos un experto en programación en ${language}. El usuario necesita ayuda con: "${helpType}".
+
+Descripción del problema: ${problemDesc || 'No especificada'}
+
+Código a analizar:
+\`\`\`${language.toLowerCase()}
+${code || '// No se proporcionó código'}
+\`\`\`
+
+Respondé en español argentino con un informe técnico completo en markdown que incluya:
+### 1. Qué está mal
+### 2. Por qué está mal
+### 3. Cómo solucionarlo (paso a paso)
+### 4. Código Corregido (bloque de código completo y funcional)
+### 5. Buenas prácticas y recomendaciones`;
+
+        const requestBody = {
+          system_instruction: {
+            parts: [{ text: "Sos SIC I.A, un asistente de programación experto. Respondé siempre en español argentino. Generá informes técnicos detallados con código corregido, explicaciones claras y buenas prácticas. Usá markdown con bloques de código." }]
+          },
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.5,
+            topP: 0.9,
+            maxOutputTokens: 4096
+          }
+        };
+
+        const response = await fetch(getGeminiUrl(), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            language: language,
-            help_type: helpType,
-            problem_desc: problemDesc,
-            code: code
-          }),
+          body: JSON.stringify(requestBody)
         });
 
         clearInterval(statusInterval);
         statusBox.classList.remove('active');
 
         if (!response.ok) {
-          const err = await response.json();
-          renderCodeResult('⚠️ Error: ' + (err.detail || 'No se pudo procesar la solicitud.'), false);
+          const err = await response.json().catch(() => ({}));
+          const errorDetail = err?.error?.message || 'Error desconocido';
+          renderCodeResult('⚠️ Error de la API de Gemini (' + response.status + '): ' + errorDetail, true);
           return;
         }
 
         const data = await response.json();
-        renderCodeResult(data.reply, true);
+        const codeReply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ La IA no generó una respuesta. Intentá de nuevo.';
+        renderCodeResult(codeReply, true);
 
       } catch (error) {
         clearInterval(statusInterval);
         statusBox.classList.remove('active');
-        const reply = getClientSideCodeAnalysis(language, helpType, problemDesc, code);
-        renderCodeResult(reply, true);
+        renderCodeResult('⚠️ No se pudo conectar con la API de Gemini. Verificá tu conexión a internet. (' + error.message + ')', true);
       } finally {
         btn.disabled = false;
       }
