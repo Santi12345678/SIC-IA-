@@ -1514,8 +1514,8 @@
             <p>Encriptación end-to-end y políticas estrictas de protección de datos empresariales.</p>
           </div>
           <div class="card">
-            <h3>API Rest ultra veloz</h3>
-            <p>Backend construido en FastAPI para garantizar latencias inferiores a 50ms.</p>
+            <h4 style="margin-bottom:6px; color:#fff;">Velocidad Extrema</h4>
+            <p>Conexión directa a la API de Gemini para garantizar respuestas en tiempo real.</p>
           </div>
         </div>
       </div>
@@ -1558,16 +1558,9 @@
     const input    = document.getElementById('chatInput');
     const messages = document.getElementById('messages');
     const welcome  = document.getElementById('welcome');
-    // ── Gemini API — Conexión directa sin backend ──────────────────────────
-    const GEMINI_API_KEY = 'AQ.Ab8RN6IPGqiV41iExyiLOSCH35ypKlNhszUYnUvvR5eyM-x6BQ';
-    const GEMINI_MODEL_FLASH = 'gemini-2.0-flash';
-    const GEMINI_MODEL_PRO = 'gemini-2.5-flash';
-    function getGeminiUrl() {
-      const model = currentSelectedModel.includes('Pro') ? GEMINI_MODEL_PRO : GEMINI_MODEL_FLASH;
-      return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-    }
-    // Historial de conversación para contexto multi-turno
-    let geminiConversation = [];
+    // ── Configuración de Backend API (Render Cloud 24/7) ───────────────────
+    const BACKEND_CHAT_URL = 'https://sic-ia-1.onrender.com/api/chat';
+    const BACKEND_CODE_URL = 'https://sic-ia-1.onrender.com/api/code-analysis';
 
     // ── Sistema de Historial de Conversaciones ──────────────────────────────
     let chatHistory = [];    // Array de { id, firstMessage, messages: [{text, who}] }
@@ -1860,7 +1853,7 @@
           <p><strong>Plan Actual:</strong> <span style="color:#8ab4ff; font-weight:600;">Plan ${currentUserPlan}</span></p>
           <p><strong>Límite de palabras:</strong> ${PLAN_LIMITS[currentUserPlan].maxWords} palabras/mensaje</p>
           <p><strong>Límite de archivos:</strong> ${PLAN_LIMITS[currentUserPlan].maxFileSizeMB} MB</p>
-          <p><strong>Estado Backend:</strong> Online (http://localhost:8000)</p>
+          <p><strong>Estado del Sistema:</strong> Conexión Directa API Gemini 🟢</p>
           <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="topbar-btn primary" onclick="openModal('plan')">Cambiar Plan</button>
             <button class="topbar-btn" onclick="closeModal()">Cerrar</button>
@@ -2360,76 +2353,37 @@
       const typingId = addTyping();
 
       try {
-        // Construir partes del mensaje del usuario
-        const userParts = [{ text: userText }];
-        // Si hay imagen adjunta, enviarla como inline_data
-        if (currentAtt && currentAtt.type === 'image' && currentAtt.dataUrl) {
-          const base64Match = currentAtt.dataUrl.match(/^data:(.+?);base64,(.+)$/);
-          if (base64Match) {
-            userParts.push({
-              inline_data: {
-                mime_type: base64Match[1],
-                data: base64Match[2]
-              }
-            });
-          }
-        }
-
-        // Agregar al historial de conversación de Gemini
-        geminiConversation.push({ role: 'user', parts: userParts });
-
-        // Limitar historial a últimos 20 turnos para no exceder tokens
-        if (geminiConversation.length > 40) {
-          geminiConversation = geminiConversation.slice(-40);
-        }
-
-        const requestBody = {
-          system_instruction: {
-            parts: [{ text: "Sos SIC I.A, un asistente de inteligencia artificial especializado en videojuegos y programación. Respondé siempre en español argentino. Podés hablar de cualquier tema relacionado con videojuegos (gameplay, lore, configuración, rendimiento, recomendaciones, game design, motores gráficos, esports) y programación (cualquier lenguaje, debugging, algoritmos, frameworks, desarrollo web, desarrollo de juegos, bases de datos, etc). Si te preguntan algo que no tiene nada que ver con videojuegos o programación, respondé amablemente pero redirigí la conversación hacia esos temas. Usá markdown para formatear tus respuestas con títulos, listas, bloques de código cuando corresponda. Sé detallado, útil y conversacional." }]
-          },
-          contents: geminiConversation,
-          generationConfig: {
-            temperature: 0.8,
-            topP: 0.95,
-            maxOutputTokens: 4096
-          }
-        };
-
-        const response = await fetch(getGeminiUrl(), {
+        const response = await fetch(BACKEND_CHAT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify({ 
+            message: userText, 
+            attachment: currentAtt,
+            model: currentSelectedModel,
+            plan: currentUserPlan
+          }),
         });
 
         removeTyping(typingId);
 
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));
-          const errorDetail = err?.error?.message || JSON.stringify(err);
-          const errorMsg = '⚠️ Error de la API de Gemini (' + response.status + '): ' + errorDetail;
+          const errorMsg = '⚠️ Error en el servidor backend (' + response.status + '): ' + (err.detail || err.message || 'Verificá tu servicio en Render');
           addMsg(errorMsg, 'ai');
           saveMessageToHistory(errorMsg, 'ai');
-          // Quitar el último mensaje del usuario del historial de Gemini si falla
-          geminiConversation.pop();
           return;
         }
 
         const data = await response.json();
-        const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ La IA no generó una respuesta. Intentá de nuevo.';
-
-        // Agregar respuesta al historial de conversación de Gemini
-        geminiConversation.push({ role: 'model', parts: [{ text: aiText }] });
-
+        const aiText = data.reply || data.response || data.output || data.message || data.text || JSON.stringify(data);
         addMsg(aiText, 'ai');
         saveMessageToHistory(aiText, 'ai');
 
       } catch (error) {
         removeTyping(typingId);
-        const errorMsg = '⚠️ No se pudo conectar con la API de Gemini. Verificá tu conexión a internet. (' + error.message + ')';
+        const errorMsg = '⚠️ No se pudo conectar con el servidor en la nube (' + BACKEND_CHAT_URL + '). Puede estar iniciándose (Render suele tardar ~30s en despertar si estuvo inactivo).';
         addMsg(errorMsg, 'ai');
         saveMessageToHistory(errorMsg, 'ai');
-        // Quitar el último mensaje del usuario del historial de Gemini si falla
-        geminiConversation.pop();
       } finally {
         input.disabled = false;
         input.focus();
@@ -2479,38 +2433,17 @@
       }, 1200);
 
       try {
-        const prompt = `Sos un experto en programación en ${language}. El usuario necesita ayuda con: "${helpType}".
-
-Descripción del problema: ${problemDesc || 'No especificada'}
-
-Código a analizar:
-\`\`\`${language.toLowerCase()}
-${code || '// No se proporcionó código'}
-\`\`\`
-
-Respondé en español argentino con un informe técnico completo en markdown que incluya:
-### 1. Qué está mal
-### 2. Por qué está mal
-### 3. Cómo solucionarlo (paso a paso)
-### 4. Código Corregido (bloque de código completo y funcional)
-### 5. Buenas prácticas y recomendaciones`;
-
-        const requestBody = {
-          system_instruction: {
-            parts: [{ text: "Sos SIC I.A, un asistente de programación experto. Respondé siempre en español argentino. Generá informes técnicos detallados con código corregido, explicaciones claras y buenas prácticas. Usá markdown con bloques de código." }]
-          },
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.5,
-            topP: 0.9,
-            maxOutputTokens: 4096
-          }
-        };
-
-        const response = await fetch(getGeminiUrl(), {
+        const response = await fetch(BACKEND_CODE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify({
+            language: language,
+            help_type: helpType,
+            problem_desc: problemDesc,
+            code: code,
+            model: currentSelectedModel,
+            plan: currentUserPlan
+          }),
         });
 
         clearInterval(statusInterval);
@@ -2518,19 +2451,18 @@ Respondé en español argentino con un informe técnico completo en markdown que
 
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));
-          const errorDetail = err?.error?.message || 'Error desconocido';
-          renderCodeResult('⚠️ Error de la API de Gemini (' + response.status + '): ' + errorDetail, true);
+          renderCodeResult('⚠️ Error del servidor (' + response.status + '): ' + (err.detail || err.message || 'Error en el backend'), true);
           return;
         }
 
         const data = await response.json();
-        const codeReply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ La IA no generó una respuesta. Intentá de nuevo.';
+        const codeReply = data.reply || data.response || data.output || JSON.stringify(data);
         renderCodeResult(codeReply, true);
 
       } catch (error) {
         clearInterval(statusInterval);
         statusBox.classList.remove('active');
-        renderCodeResult('⚠️ No se pudo conectar con la API de Gemini. Verificá tu conexión a internet. (' + error.message + ')', true);
+        renderCodeResult('⚠️ No se pudo conectar con la API en la nube (' + BACKEND_CODE_URL + '). Verificá el servicio en Render.', true);
       } finally {
         btn.disabled = false;
       }
