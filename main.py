@@ -127,10 +127,43 @@ def chat_endpoint(req: ChatRequest):
 def code_analysis_endpoint(req: CodeAnalysisRequest):
     api_key = get_api_key()
     
-    prompt = f"""Sos un experto en programación en {req.language}. El usuario necesita ayuda con: "{req.help_type}".
+    prompt = (
+        f"Sos un experto en programación en {req.language}. El usuario necesita ayuda con: \"{req.help_type}\".\n\n"
+        f"Descripción del problema: {req.problem_desc or 'No especificada'}\n\n"
+        f"Código a analizar:\n"
+        f"```{req.language.lower()}\n"
+        f"{req.code or '// No se proporcionó código'}\n"
+        f"```\n\n"
+        f"Respondé en español argentino con un informe técnico completo en markdown que incluya:\n"
+        f"### 1. Qué está mal\n"
+        f"### 2. Por qué está mal\n"
+        f"### 3. Cómo solucionarlo (paso a paso)\n"
+        f"### 4. Código Corregido (bloque de código completo y funcional)\n"
+        f"### 5. Buenas prácticas y recomendaciones"
+    )
 
-Descripción del problema: {req.problem_desc or 'No especificada'}
+    sys_instruction = "Sos SIC I.A, un asistente de programación experto. Respondé siempre en español argentino con informes técnicos detallados en markdown."
 
-Código a analizar:
-```{req.language.lower()}
-{req.code or '// No se proporcionó código'}
+    payload = {
+        "system_instruction": {
+            "parts": [{"text": sys_instruction}]
+        },
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": prompt}]
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.4,
+            "maxOutputTokens": 4096
+        }
+    }
+    
+    ai_text = call_gemini(payload, api_key)
+    return {"reply": ai_text}
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
