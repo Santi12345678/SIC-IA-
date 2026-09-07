@@ -1283,15 +1283,9 @@
         </a>
       </li>
       <li>
-        <a href="#" id="nav-soluciones" onclick="switchView('soluciones', event)">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M4.93 4.93a10 10 0 000 14.14"/></svg>
-          Soluciones
-        </a>
-      </li>
-      <li>
-        <a href="#" id="nav-tecnologia" onclick="switchView('tecnologia', event)">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Tecnología
+        <a href="#" id="nav-acerca" onclick="switchView('acerca', event)">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          Acerca de SIC
         </a>
       </li>
       <li>
@@ -1553,47 +1547,82 @@
       </div>
     </div>
 
-    <!-- View: SOLUCIONES -->
-    <div class="view-content" id="view-soluciones">
+    <!-- View: ACERCA DE SIC -->
+    <div class="view-content" id="view-acerca">
       <div class="section-container">
-        <h2 class="section-title">Soluciones Inteligentes</h2>
-        <p class="section-desc">Diseñadas para escalar empresas y potenciar la productividad mediante inteligencia artificial avanzada.</p>
-        <div class="grid-cards">
+        
+        <!-- Presentación -->
+        <div style="text-align:center; max-width:700px; margin:0 auto 36px auto;">
+          <h2 class="section-title" style="margin-bottom:8px;">Acerca de SIC I.A</h2>
+          <p class="section-desc" style="margin-bottom:0;">Tu copiloto de Inteligencia Artificial especializado en Videojuegos y Programación. Diseñado para ofrecer respuestas veloces, precisas y contextualizadas.</p>
+        </div>
+
+        <!-- Pilares del Proyecto -->
+        <h3 style="color:#fff; font-size:1.15rem; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          <span>⚡</span> Capacidades Principales
+        </h3>
+        <div class="grid-cards" style="margin-bottom:36px;">
           <div class="card">
-            <h3>Automatización de Procesos</h3>
-            <p>Optimizá flujos de trabajo repetitivos reduciendo tiempos operativos en más del 80%.</p>
+            <h3>🎮 Especialista en Gaming</h3>
+            <p>Análisis en profundidad de títulos, comparativa de mecánicas, recomendaciones basadas en gustos personales, guías de jefes y optimización técnica de FPS.</p>
           </div>
           <div class="card">
-            <h3>Análisis Predictivo de Datos</h3>
-            <p>Anticipá tendencias de mercado e identificá oportunidades con modelos analíticos de alta precisión.</p>
+            <h3>💻 Asistente de Programación</h3>
+            <p>Módulo de análisis de código para C++, Python, JavaScript y C. Generación de informes técnicos con detección de bugs, refactorización y buenas prácticas.</p>
           </div>
           <div class="card">
-            <h3>Agentes de Atención 24/7</h3>
-            <p>Implementá asistentes virtuales capaces de resolver consultas complejas con tono natural.</p>
+            <h3>👁️ Visión Multimodal</h3>
+            <p>Capacidad de procesar y comprender capturas de pantalla, imágenes de errores o diagramas técnicos directamente desde el chat.</p>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- View: TECNOLOGÍA -->
-    <div class="view-content" id="view-tecnologia">
-      <div class="section-container">
-        <h2 class="section-title">Nuestra Tecnología</h2>
-        <p class="section-desc">Infraestructura robusta construida sobre modelos de lenguaje líderes y arquitectura de alta disponibilidad.</p>
-        <div class="grid-cards">
+        <!-- Arquitectura & Tecnología -->
+        <h3 style="color:#fff; font-size:1.15rem; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          <span>☁️</span> Arquitectura & Tecnología
+        </h3>
+        <div class="grid-cards" style="margin-bottom:36px;">
           <div class="card">
-            <h3>Motor Gemini Integration</h3>
-            <p>Conectividad nativa con los modelos multimodales más veloces del mundo.</p>
+            <h3>Motor Google Gemini Flash</h3>
+            <p>Conexión directa con la familia de modelos Flash de Google AI Studio, optimizados para latencia ultrabaja y comprensión profunda.</p>
+          </div>
+          <div class="card">
+            <h3>Backend en la Nube 24/7</h3>
+            <p>API REST desarrollada en Python con FastAPI y desplegada en la infraestructura global de Render, garantizando alta disponibilidad continua.</p>
           </div>
           <div class="card">
             <h3>Seguridad & Privacidad</h3>
-            <p>Encriptación end-to-end y políticas estrictas de protección de datos empresariales.</p>
-          </div>
-          <div class="card">
-            <h4 style="margin-bottom:6px; color:#fff;">Velocidad Extrema</h4>
-            <p>Conexión directa a la API de Gemini para garantizar respuestas en tiempo real.</p>
+            <p>Arquitectura desacoplada con gestión de claves segura en variables de entorno en el servidor, protegiendo credenciales y datos.</p>
           </div>
         </div>
+
+        <!-- Equipo Creador -->
+        <h3 style="color:#fff; font-size:1.15rem; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          <span>👥</span> Equipo de Desarrollo
+        </h3>
+        <div class="grid-cards">
+          <div class="card" style="display:flex; align-items:center; gap:16px; border-color:rgba(42,95,255,0.35); background:rgba(42,95,255,0.06);">
+            <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #2a5fff, #00d2ff); display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:1.2rem; flex-shrink:0;">S</div>
+            <div>
+              <h3 style="margin:0 0 4px 0; color:#fff; font-size:1.05rem;">Santiago</h3>
+              <p style="margin:0; font-size:0.8rem; color:#8ab4ff;">Líder de Proyecto & Desarrollo Fullstack</p>
+            </div>
+          </div>
+          <div class="card" style="display:flex; align-items:center; gap:16px; border-color:rgba(42,95,255,0.35); background:rgba(42,95,255,0.06);">
+            <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #7928ca, #ff0080); display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:1.2rem; flex-shrink:0;">I</div>
+            <div>
+              <h3 style="margin:0 0 4px 0; color:#fff; font-size:1.05rem;">Ian</h3>
+              <p style="margin:0; font-size:0.8rem; color:#8ab4ff;">Experiencia de Usuario & Lógica Gaming</p>
+            </div>
+          </div>
+          <div class="card" style="display:flex; align-items:center; gap:16px; border-color:rgba(42,95,255,0.35); background:rgba(42,95,255,0.06);">
+            <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #00dfd8, #007cf0); display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:1.2rem; flex-shrink:0;">C</div>
+            <div>
+              <h3 style="margin:0 0 4px 0; color:#fff; font-size:1.05rem;">Carlos</h3>
+              <p style="margin:0; font-size:0.8rem; color:#8ab4ff;">Arquitectura Cloud & Pruebas Técnicas</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
