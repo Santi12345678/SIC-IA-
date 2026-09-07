@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODELS_FALLBACK = ["gemini-3.6-flash", "gemini-flash-latest", "gemini-3.7-flash"]
+MODELS_FALLBACK = ["gemini-flash-latest", "gemini-3.1-flash-lite"]
 
 def get_api_key() -> str:
     load_dotenv(override=True)
@@ -40,7 +40,7 @@ def call_gemini(payload: dict, api_key: str) -> str:
     for model in MODELS_FALLBACK:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
         try:
-            resp = requests.post(url, json=payload, headers=headers, timeout=25)
+            resp = requests.post(url, json=payload, headers=headers, timeout=20)
             if resp.status_code == 200:
                 data = resp.json()
                 return data["candidates"][0]["content"]["parts"][0]["text"]
@@ -57,7 +57,7 @@ def call_gemini(payload: dict, api_key: str) -> str:
             last_err = str(e)
             continue
             
-    raise HTTPException(status_code=503, detail=f"Servidores de Gemini con alta demanda. Reintentá en unos segundos. Detalle: {last_err}")
+    raise HTTPException(status_code=503, detail="Servidores de IA temporalmente con alta demanda. Por favor reintentá en 5 a 10 segundos.")
 
 class ChatRequest(BaseModel):
     message: str
@@ -134,38 +134,3 @@ Descripción del problema: {req.problem_desc or 'No especificada'}
 Código a analizar:
 ```{req.language.lower()}
 {req.code or '// No se proporcionó código'}
-```
-
-Respondé en español argentino con un informe técnico completo en markdown que incluya:
-### 1. Qué está mal
-### 2. Por qué está mal
-### 3. Cómo solucionarlo (paso a paso)
-### 4. Código Corregido (bloque de código completo y funcional)
-### 5. Buenas prácticas y recomendaciones"""
-
-    sys_instruction = "Sos SIC I.A, un asistente de programación experto. Respondé siempre en español argentino con informes técnicos detallados en markdown."
-
-    payload = {
-        "system_instruction": {
-            "parts": [{"text": sys_instruction}]
-        },
-        "contents": [
-            {
-                "role": "user",
-                "parts": [{"text": prompt}]
-            }
-        ],
-        "generationConfig": {
-            "temperature": 0.4,
-            "maxOutputTokens": 4096
-        }
-    }
-    
-    ai_text = call_gemini(payload, api_key)
-    return {"reply": ai_text}
-
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8080))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
-
