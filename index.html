@@ -1158,6 +1158,70 @@
         max-width: 100%;
       }
     }
+
+    /* Floating Prompt Banner */
+    .floating-prompt-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 16px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, rgba(42, 95, 255, 0.22), rgba(15, 23, 42, 0.85));
+      border: 1px solid rgba(106, 176, 255, 0.4);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 16px rgba(42, 95, 255, 0.25);
+      animation: floatPromptUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes floatPromptUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .floating-prompt-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+    }
+    .floating-prompt-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .floating-prompt-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      line-height: 1.3;
+    }
+    .floating-prompt-info strong {
+      color: #8ab4ff;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .floating-prompt-info span {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.8rem;
+    }
+    .floating-prompt-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .floating-prompt-close:hover {
+      background: rgba(255, 90, 90, 0.3);
+      border-color: rgba(255, 90, 90, 0.5);
+    }
   </style>
 </head>
 <body>
@@ -1312,6 +1376,18 @@
       </div>
 
       <div class="input-area">
+        <!-- Floating Prompt Banner -->
+        <div id="floatingPromptBar" class="floating-prompt-bar" style="display:none;">
+          <div class="floating-prompt-content">
+            <span id="floatingPromptIcon" class="floating-prompt-icon">⭐</span>
+            <div class="floating-prompt-info">
+              <strong id="floatingPromptTitle">Recomendaciones Personalizadas</strong>
+              <span id="floatingPromptDesc">Decime qué género, plataforma o estilo te gusta y te armo una lista personalizada.</span>
+            </div>
+          </div>
+          <button type="button" class="floating-prompt-close" onclick="clearFloatingPrompt()" title="Quitar">✕</button>
+        </div>
+
         <div class="input-box">
           <div id="filePreviewContainer" class="file-preview-container" style="display:none;"></div>
           <textarea id="chatInput" placeholder="Escribí tu consulta a SIC I.A..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
@@ -1431,42 +1507,42 @@
         <!-- Tarjetas de categorías -->
         <div class="vg-grid">
 
-          <div class="vg-card" onclick="fillAndGoChat('Quiero un análisis completo y detallado de un videojuego. Dame tu valoración sobre mecánicas, puntos fuertes, puntos débiles y puntuación general.')">
+          <div class="vg-card" onclick="setFloatingPrompt('🎯', 'Análisis de Juegos', 'Pedí una valoración sobre mecánicas, puntos fuertes, débiles y puntuación general.', 'Ej: Quiero un análisis completo y detallado de Cyberpunk 2077...')">
             <div class="vg-card-icon">🎯</div>
             <div class="vg-card-title">Análisis de Juegos</div>
             <div class="vg-card-desc">Análisis detallados con mecánicas, puntos fuertes, débiles y valoración general de cualquier videojuego.</div>
             <div class="vg-card-arrow">→ Consultar</div>
           </div>
 
-          <div class="vg-card" onclick="fillAndGoChat('Recomendame videojuegos. Decime qué género, plataforma o estilo te gusta y te armo una lista personalizada.')">
+          <div class="vg-card" onclick="setFloatingPrompt('⭐', 'Recomendaciones Personalizadas', 'Decime qué género, plataforma o estilo te gusta y te armo una lista personalizada.', 'Ej: Me gustan los RPG por turnos y acción en PC...')">
             <div class="vg-card-icon">⭐</div>
             <div class="vg-card-title">Recomendaciones Personalizadas</div>
             <div class="vg-card-desc">Recomendaciones basadas en tu género, plataforma o estilo favorito con justificación de cada título.</div>
             <div class="vg-card-arrow">→ Consultar</div>
           </div>
 
-          <div class="vg-card" onclick="fillAndGoChat('Necesito guías, estrategias y tips para un videojuego. Decime el juego y te ayudo con tácticas y secretos.')">
+          <div class="vg-card" onclick="setFloatingPrompt('📖', 'Guías y Estrategias', 'Tips, tácticas, secretos, builds y walkthroughs para cualquier juego.', 'Ej: ¿Qué build me recomendás para empezar en Elden Ring?...')">
             <div class="vg-card-icon">📖</div>
             <div class="vg-card-title">Guías y Estrategias</div>
             <div class="vg-card-desc">Tips, tácticas, secretos, builds y walkthroughs para cualquier juego que necesites dominar.</div>
             <div class="vg-card-arrow">→ Consultar</div>
           </div>
 
-          <div class="vg-card" onclick="fillAndGoChat('Quiero consultar sobre desarrollo de videojuegos: motores gráficos, lenguajes de programación, herramientas y pipelines de producción.')">
+          <div class="vg-card" onclick="setFloatingPrompt('🛠️', 'Desarrollo de Videojuegos', 'Consultá sobre motores (Unreal, Unity, Godot), lenguajes, pipelines y gamedev.', 'Ej: ¿Qué motor me conviene para programar un juego 2D?...')">
             <div class="vg-card-icon">🛠️</div>
             <div class="vg-card-title">Desarrollo de Videojuegos</div>
             <div class="vg-card-desc">Motores (Unreal, Unity, Godot), lenguajes, pipelines de producción y herramientas de gamedev.</div>
             <div class="vg-card-arrow">→ Consultar</div>
           </div>
 
-          <div class="vg-card" onclick="fillAndGoChat('Contame sobre el lore, historia y universo de un videojuego. Quiero explorar su narrativa a fondo.')">
+          <div class="vg-card" onclick="setFloatingPrompt('📜', 'Lore y Universos', 'Explorá la narrativa, historia profunda, cronologías y universo de tus juegos favoritos.', 'Ej: Explicame el lore y la historia completa de Hollow Knight...')">
             <div class="vg-card-icon">📜</div>
             <div class="vg-card-title">Lore y Universos</div>
             <div class="vg-card-desc">Explorá la narrativa, historia profunda, cronologías y el universo expandido de tus juegos favoritos.</div>
             <div class="vg-card-arrow">→ Consultar</div>
           </div>
 
-          <div class="vg-card" onclick="fillAndGoChat('Hablame sobre la industria de los videojuegos: tendencias actuales, noticias, esports y el mercado gaming.')">
+          <div class="vg-card" onclick="setFloatingPrompt('🏆', 'Industria y Esports', 'Tendencias del mercado, noticias de la industria, competitivo y cultura gamer.', 'Ej: ¿Cuáles son los torneos y tendencias más importantes de este año?...')">
             <div class="vg-card-icon">🏆</div>
             <div class="vg-card-title">Industria y Esports</div>
             <div class="vg-card-desc">Tendencias del mercado, noticias de la industria, competitivo, esports y cultura gamer.</div>
@@ -1707,9 +1783,32 @@
     }
 
 
-    function fillAndGoChat(text) {
+    let activeFloatingPrompt = null;
+
+    function setFloatingPrompt(icon, title, desc, placeholder) {
+      activeFloatingPrompt = { icon, title, desc };
       switchView('inicio');
-      fillInput(text);
+      const bar = document.getElementById('floatingPromptBar');
+      if (bar) {
+        document.getElementById('floatingPromptIcon').textContent = icon;
+        document.getElementById('floatingPromptTitle').textContent = title;
+        document.getElementById('floatingPromptDesc').textContent = desc;
+        bar.style.display = 'flex';
+      }
+      input.value = '';
+      input.placeholder = placeholder || 'Escribí tu consulta sobre ' + title + '...';
+      input.focus();
+    }
+
+    function clearFloatingPrompt() {
+      activeFloatingPrompt = null;
+      const bar = document.getElementById('floatingPromptBar');
+      if (bar) bar.style.display = 'none';
+      input.placeholder = 'Escribí tu consulta a SIC I.A...';
+    }
+
+    function fillAndGoChat(text) {
+      setFloatingPrompt('🎮', 'Consulta de Videojuegos', text, 'Escribí tu consulta o detalle acá...');
     }
 
     function handleVgSearch(e) {
@@ -1717,8 +1816,7 @@
         const query = document.getElementById('vgSearchInput').value.trim();
         if (!query) return;
         document.getElementById('vgSearchInput').value = '';
-        switchView('inicio');
-        fillInput(query);
+        setFloatingPrompt('🔍', 'Búsqueda de Videojuegos: ' + query, 'Análisis y consulta sobre ' + query, 'Preguntá lo que quieras sobre ' + query + '...');
       }
     }
 
@@ -2321,9 +2419,16 @@
       const text = input.value.trim();
       const currentAtt = pendingAttachment;
 
-      if (!text && !currentAtt) return;
+      let promptContext = '';
+      if (activeFloatingPrompt) {
+        promptContext = `[Categoría: ${activeFloatingPrompt.title} - ${activeFloatingPrompt.desc}]\n\n`;
+      }
 
-      const userText = text || (currentAtt ? `Analizá la imagen/archivo adjunto: ${currentAtt.name}` : '');
+      if (!text && !currentAtt && !activeFloatingPrompt) return;
+
+      const userText = text || (activeFloatingPrompt ? activeFloatingPrompt.desc : (currentAtt ? `Analizá la imagen/archivo adjunto: ${currentAtt.name}` : ''));
+      const textToSend = promptContext + (text || (activeFloatingPrompt ? activeFloatingPrompt.desc : ''));
+      clearFloatingPrompt();
 
       // Limpiar vista previa de archivo adjunto
       pendingAttachment = null;
@@ -2357,7 +2462,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            message: userText, 
+            message: textToSend, 
             attachment: currentAtt,
             model: currentSelectedModel,
             plan: currentUserPlan
